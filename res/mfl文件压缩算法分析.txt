@@ -1,0 +1,34 @@
+mfl文件压缩算法
+首先是
+首字节
+转成二进制
+XXX | YYYYY
+XXX = 0的时候，采用算法B
+XXX = 1的时候，采用算法A
+
+算法A：
+flag，1字节，注意，首次进入算法A的时候，是把首字节的Y部分当做flag进入算法A的，即000|YYYYY这种形式
+flag的格式也是XXX | YYYYY
+如果X为0，直接输出Y + 1字节
+如果X不为0，分成1-6，还有7的情况讨论
+X如果是1-6
+那么length的值为x - 1，并读取第二字节作为flag_ext（ZZZZZZZZ），如果YZ的值不为0x1FFF，回退量为YZ
+如果YZ的值为0x1FFF，那么读取第三字节(AAAAAAAA)，第四字节(BBBBBBBB)，回退量为AB + 0x1FFF
+回退量为0的时候，outbuf倒退1字节，取这个字节，复制length + 3个这个字节到outbuf上（RLE部分）
+回退量不为0的时候，outbuf倒退yz + 1字节，从这里复制length + 3个字节到outbuf上（LZ部分）
+
+X如果是7，从接下来的字节中进行求和操作，加到不为0xff的那个字节为止，这个和记为num
+比如
+E0 FF FF FF 00 ZZ，（这里Z的定义跟上面一样，用来算回退量的）
+那么0xff + 0xff + 0xff + 0x0
+那么length = num + 6，回退量跟上面一样
+
+
+算法B：
+flag，1字节，注意，首次进入算法B的时候，是把首字节的Y部分当做flag进入算法B的，即000|YYYYY这种形式
+如果X为0，直接输出Y + 1字节
+如果X不为0，分成1-6，还有7的情况讨论
+X如果是1-6，那么length的值为x - 1，并读取第二字节作为flag_ext（ZZZZZZZZ），回退量为YZ
+X如果是7，读取下一字节加上7然后减去1，作为length，回退量同上
+如果回退量为0，倒退1字节，取用这个字节，复制length + 3字节（RLE部分）
+如果回退量不为0，倒退YZ + 1字节，复制length + 3字节（LZ部分）
