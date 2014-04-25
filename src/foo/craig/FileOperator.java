@@ -18,15 +18,22 @@ public class FileOperator {
 
 			str = new byte[bi.available()];
 			int i = 0;
+			int offset = 8;
 			while (true) {
 				int temp = bi.read();
+				
 				if (temp == -1) {
 					break;
 				}
 				
+				if (offset > 0) {
+					offset--;
+					continue;
+				}
 				// 修正取得0xFF的问题
-				Byte bt = new Byte((byte) temp);
-				str[i++] = bt.intValue() < -1 ? -1 : bt.byteValue();
+//				Byte bt = new Byte((byte) temp);
+//				str[i++] = bt.intValue() < -1 ? -1 : bt.byteValue();
+				str[i++] = (byte) temp;
 //				print(temp, i);
 				
 			}

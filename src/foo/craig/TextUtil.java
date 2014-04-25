@@ -69,7 +69,7 @@ public class TextUtil {
 	}
 	
 	public static String convertToBinaryString(byte bt) {
-		String str = Integer.toBinaryString(bt);
+		String str = Integer.toBinaryString(bt & 0xFF);
 		return convertToBinaryString(str);
 	}
 

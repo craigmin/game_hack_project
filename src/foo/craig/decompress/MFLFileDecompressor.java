@@ -38,10 +38,10 @@ public class MFLFileDecompressor {
 				if(x < 7) {
 					length = x - 1;
 				} else {
-					int i = 1;
+					int i = 0;
 					do {
-						length += bts[j + i];
 						i++;
+						length += bts[j + i];
 					} while (TextUtil.convertToHexString(bts[j + i]).equals("FF"));
 				}
 				System.out.printf("  length: %-2d", length);
