@@ -8,9 +8,9 @@ public class DecompressorMain {
 		// 输入文件路径
 		String input = path + "A_comp.bin";
 		// 输出文件路径
-		String output = path + "mfl_out";
+		String output = path + "mfl_out.bin";
 
-		new MFLFileDecompressor(input, output).start();
+		new MFLFileDecompressor(input, output).start().output();
 		
 		System.out.println("---  End  --- ");
 	}
