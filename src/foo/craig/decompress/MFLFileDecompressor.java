@@ -2,8 +2,9 @@ package foo.craig.decompress;
 
 import java.io.ByteArrayOutputStream;
 
-import foo.craig.FileOperator;
-import foo.craig.TextUtil;
+import foo.craig.util.FileOperator;
+import foo.craig.util.PrintUtil;
+import foo.craig.util.TextUtil;
 
 public class MFLFileDecompressor {
 	private String inputFilePath;
@@ -18,60 +19,59 @@ public class MFLFileDecompressor {
 
 	public MFLFileDecompressor start() {
 		byte[] bts = FileOperator.readFile(inputFilePath);
-		int outlength = 0;
-		for (int j = 8; j < 5297; j++) {
+		int type = 0;
+		for (int j = 8; j < bts.length; j++) {
 
-			if (outlength > 0) {
-				bos.write(bts, j, outlength);
-				j = j + outlength - 1;
-				outlength = 0;
-				continue;
-			}
-			if (j > 5291) {
-				print("");
-			}
-
-			System.out.printf("第%-3d个字节 ", j + 1);
+			PrintUtil.print("第%-3d个字节 ", j + 1);
 			String strBin = TextUtil.convertToBinaryString(bts[j]);
 			Integer iX = TextUtil
 					.convertBinaryStringToInteger(getXstring(strBin));
 			Integer iY = TextUtil
 					.convertBinaryStringToInteger(getYstring(strBin)) + 1;
-			print("  strBin: " + strBin);
-			print("  output size: " + bos.size());
-			// if(true) break;
+			PrintUtil.print("  strBin: %s", strBin);
+			PrintUtil.print("  output size: %s", bos.size());
+
+			if (j == 8) {
+				type = iX;
+			}
 
 			if (j == 8 || iX == 0) {
-				outlength = iY;
+				bos.write(bts, j + 1, iY);
+				j += iY;
 			} else {
-				int length = 6;
-				if (iX < 7) {
-					length = iX - 1;
-				} else {
-					int i = 0;
-					do {
-						i++;
-						length += bts[++j];
-					} while (TextUtil.convertToHexString(bts[j]).equals("FF"));
+				int length = iX - 1;
+				if (iX == 7) {
+					if (type == 1) {
+						int i = 0;
+						do {
+							i++;
+							length += (0x000000ff & bts[++j]);
+						} while (TextUtil.convertToHexString(bts[j]).equals(
+								"FF"));
+					} else {
+						length += (0x000000ff & bts[++j]);
+					}
 				}
 
+				Integer backSteps;
 				String strNextZ = TextUtil.convertToHexString(bts[++j]);
-				print("  strNextZ: " + strNextZ);
-				
 				String strY = TextUtil
 						.convertBinaryStringToHexString(getYstring(strBin));
 				String strYZ = strY + strNextZ;
-				Integer backSteps;
-				if (!strYZ.equals("1FFF")) {
-					backSteps = TextUtil.convertHexStringToInteger(strYZ);
+
+				if (type == 1) {
+					if (!strYZ.equals("1FFF")) {
+						backSteps = TextUtil.convertHexStringToInteger(strYZ);
+					} else {
+						String strA = TextUtil.convertToHexString(bts[++j]);
+						String strB = TextUtil.convertToHexString(bts[++j]);
+						String strAB = strA + strB;
+						backSteps = TextUtil.convertHexStringToInteger(strAB)
+								+ TextUtil.convertHexStringToInteger("1FFF");
+					}
 				} else {
-					String strA = TextUtil.convertToHexString(bts[++j]);
-					String strB = TextUtil.convertToHexString(bts[++j]);
-					String strAB = strA + strB;
-					backSteps = TextUtil.convertHexStringToInteger(strAB)
-							+ TextUtil.convertHexStringToInteger("1FFF");
+					backSteps = TextUtil.convertHexStringToInteger(strYZ);
 				}
-				// print("  回退量: " + backSteps);
 
 				length += 3;
 				byte[] outBts = bos.toByteArray();
@@ -80,26 +80,24 @@ public class MFLFileDecompressor {
 					for (int k = 0; k < length; k++) {
 						bos.write(bt);
 					}
-				} else {
-					if (backSteps < length) {
-						byte[] tempBts = new byte[length];
-						
-						for(int k = 0; k < length; k++) {
-							int offset = outBts.length - backSteps -1 + k;
-							if(offset < (outBts.length -1)) {
-							tempBts[k] = outBts[offset];
-							} else{
-								tempBts[k] = tempBts[(offset +1- outBts.length)];
-							} 
-						}
+				} else if (backSteps < length) {
+					byte[] tempBts = new byte[length];
 
-						bos.write(tempBts, 0, length);
-					} else {
-						bos.write(outBts, outBts.length - backSteps - 1, length);
+					for (int k = 0; k < length; k++) {
+						int offset = outBts.length - backSteps - 1 + k;
+						if (offset < outBts.length) {
+							tempBts[k] = outBts[offset];
+						} else {
+							tempBts[k] = tempBts[(offset - outBts.length)];
+						}
 					}
+
+					bos.write(tempBts, 0, length);
+				} else {
+					bos.write(outBts, outBts.length - backSteps - 1, length);
 				}
 			}
-			println("");
+			PrintUtil.println("");
 		}
 
 		return this;
@@ -115,13 +113,5 @@ public class MFLFileDecompressor {
 
 	private String getYstring(String str) {
 		return str.substring(3, 8);
-	}
-
-	private static void print(Object obj) {
-		System.out.print(obj);
-	}
-
-	private static void println(Object obj) {
-		System.out.println(obj);
 	}
 }

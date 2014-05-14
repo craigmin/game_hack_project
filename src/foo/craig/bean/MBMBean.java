@@ -1,6 +1,8 @@
-package foo.craig;
+package foo.craig.bean;
 
 import java.util.ArrayList;
+
+import foo.craig.util.TextUtil;
 
 public class MBMBean {
 	private static final int FILE_HEADER_LENGTH = 16;

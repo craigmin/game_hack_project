@@ -1,8 +1,12 @@
-package foo.craig.decompress;
+package foo.craig;
+
+import foo.craig.decompress.MFLFileDecompressor;
+import foo.craig.util.PrintUtil;
 
 public class DecompressorMain {
+
 	public static void main(String args[]){
-		System.out.println("--- Start --- ");
+		PrintUtil.println("--- DecompressorMain Start --- ");
 		
 		String path = "res\\";
 		// 输入文件路径
@@ -11,7 +15,7 @@ public class DecompressorMain {
 		String output = path + "mfl_out.bin";
 
 		new MFLFileDecompressor(input, output).start().output();
-		
-		System.out.println("---  End  --- ");
+
+		PrintUtil.println("--- DecompressorMain End   --- ");
 	}
 }

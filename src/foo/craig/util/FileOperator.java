@@ -1,4 +1,4 @@
-package foo.craig;
+package foo.craig.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedWriter;

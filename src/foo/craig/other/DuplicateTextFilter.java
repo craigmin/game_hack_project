@@ -4,7 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 
-import foo.craig.TextUtil;
+import foo.craig.util.TextUtil;
 
 public class DuplicateTextFilter {
 	public static void main(String args[]){

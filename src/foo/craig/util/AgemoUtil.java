@@ -1,9 +1,11 @@
-package foo.craig;
+package foo.craig.util;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import foo.craig.bean.MBMBean;
 
 public class AgemoUtil {
 	private final static String LEFT_TAG = "#### ";
